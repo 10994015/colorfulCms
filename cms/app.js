@@ -23,6 +23,9 @@ app.get('/newsCreate', (req, res)=>{
 app.get('/newsUpdate',(req, res)=>{
     res.render('newsUpdate.ejs');
 })
+app.get('/img',(req, res)=>{
+    res.render('img.ejs');
+})
 app.listen(5000, ()=>{
     console.log("server started");
 })
