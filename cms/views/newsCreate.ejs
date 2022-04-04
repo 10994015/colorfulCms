@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=1.0, maximum-scale=3.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>新增資料</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js"></script>
+</head>
+<style>
+.createNews{
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    margin:50px auto;
+    align-items: center;
+}
+.createNews input , .createNews button {
+    margin:15px 0;
+    width:100%;
+    height: 30px;
+}
+.createNews button{
+    cursor: pointer;
+}
+.createNews textarea{
+    width:100%;
+    min-height: 300px;
+    resize: vertical
+}
+</style>
+<body>
+    <div class="createNews">
+            <h3>新增公告</h3>
+            <input type="text" placeholder="請輸入標題..." id="title">
+            <input type="hidden" value="/images/a.jpg" id="imgsrc">
+            <textarea name="" id="content" cols="30" rows="10"  placeholder="請輸入內文..."></textarea>
+            <button id="cerateBtn">新增</button>
+    </div>
+
+    <script>
+        const title = document.getElementById('title');
+        const content = document.getElementById('content');
+        const imgsrc = document.getElementById('imgsrc');
+        const createBtn  = document.getElementById('cerateBtn');
+        const createFn = ()=>{
+            let newsData = {};
+            console.log(content.value);
+            
+            newsData.title = title.value;
+            newsData.content = content.value;
+            newsData.imgsrc = imgsrc.value;
+            axios.post('/newsrouter', newsData).then(res=>{
+                if(res.status === 201){
+                    console.log(res.data);
+                    alert('新增成功!');
+                    window.location.href = "/news";
+                }
+            }).catch(err=>{
+                console.log(err);
+            })
+        }
+        createBtn.addEventListener('click',createFn);
+    </script>
+</body>
+</html>

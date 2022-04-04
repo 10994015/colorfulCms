@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=1.0, maximum-scale=3.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>編輯公告</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js"></script>
+    <style>
+    #error{
+        display: none;
+    }
+    #updatePage{
+        display: flex;
+        flex-direction: column;
+        width:500px;
+        margin:50px auto;
+    }
+    #updatePage input, #updatePage button {
+        margin:15px 0;
+        width:100%;
+        height: 30px;
+    }
+    #updatePage button{
+        cursor: pointer;
+    }
+    #updatePage textarea{
+        width:100%;
+        min-height: 300px;
+        resize: vertical
+    }
+    </style>
+</head>
+<body>
+    <div id="updatePage">
+            <input type="text" id="title" />
+            <textarea name="" id="content" cols="30" rows="10"></textarea>
+            <button id="updateBtn">編輯</button>
+    </div>
+    <div id="error">
+        <h1 style="color:red">錯誤!</h1>
+    </div>
+    <script>
+        window.onload = ()=>{
+            const updatePage = document.getElementById('updatePage');
+            const url = location.href;
+            const title = document.getElementById('title');
+            const content = document.getElementById('content');
+            const updateBtn = document.getElementById('updateBtn');
+            let errpage = false;
+            console.log(url.indexOf('?'));
+            if(url.indexOf('?')!=-1){
+                const id = Number(url.split('?')[1].split('=')[1]);
+                axios.get('/newsrouter').then(res=>{
+                        let newsData = {};
+                        res.data.result.forEach(e=>{
+                            if(e.id == id ){
+                                newsData = e;
+                                errpage = true;
+                            }
+                            
+                        })
+                        if(!errpage){
+                                updatePage.style.display = "none";
+                                const error = document.getElementById('error');
+                                error.innerHTML = "<h1 style='color:red'>找不到資料!</h1>"
+                                error.style.display = "block";
+                                return;
+                        }
+                        console.log(newsData);
+                        title.value = newsData.title;
+                        content.value = newsData.content;
+                })
+                
+
+                const updateFn = ()=>{
+                    let newsData = {};
+                    newsData.title = title.value;
+                    newsData.content = content.value;
+                    axios.patch(`/newsrouter/${id}`,newsData).then(res=>{
+                        if(res.status===200){
+                            console.log(res.data);
+                        }
+                        alert('更新成功!');
+                        window.location.href = "/news";
+                    }).catch(err=>{
+                        console.log(err);
+                    })
+                }
+                updateBtn.addEventListener('click',updateFn);
+                
+
+            }else{
+                updatePage.style.display = "none";
+                const error = document.getElementById('error');
+                error.style.display = "block";
+            }
+            
+
+            
+        };
+        
+    </script>
+</body>
+</html>
