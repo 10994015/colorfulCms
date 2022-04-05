@@ -8,6 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js"></script>
 </head>
 <style>
+*{
+    margin:0;
+    padding: 0;
+}
 .createNews{
     display: flex;
     flex-direction: column;
@@ -28,6 +32,67 @@
     min-height: 300px;
     resize: vertical
 }
+#selectImg{
+    width:100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left:0;
+    background-color: rgba(0, 0, 0, .5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+#imgModule{
+    width:800px;
+    height: 600px;
+    background-color: #fff;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+}
+#imgModule img{
+    width:200px;
+    height: 150px;
+    object-fit: cover;
+    margin:10px;
+    cursor: pointer;
+}
+#chkImgBtn{
+    position: absolute;
+    right:15px;
+    bottom: 15px;
+    width:100px;
+    height: 35px;
+}
+#closeModule{
+    position: absolute;
+    top: 5px;
+    right:5px;
+}
+#uploadLink{
+    position: absolute;
+    left:15px;
+    bottom: 15px;
+    width:100px;
+    height: 35px;
+    display: block;
+    background-color: #ccc;
+    text-decoration: none;
+    color:#222;
+    font-size: 14px;
+    text-align: center;
+    line-height: 35px;
+    cursor: pointer;
+    border:1px #111 solid;
+}
+#img{
+    width:200px;
+    height: 150px;
+    object-fit: cover;
+}
 </style>
 <body>
     <div class="createNews">
@@ -35,14 +100,29 @@
             <input type="text" placeholder="請輸入標題..." id="title">
             <input type="hidden" value="/images/a.jpg" id="imgsrc">
             <textarea name="" id="content" cols="30" rows="10"  placeholder="請輸入內文..."></textarea>
+            <img src="" alt="" id="img">
+            <button id="selectImgBtn">選擇封面圖片</button>
             <button id="cerateBtn">新增</button>
+            <div id="selectImg">
+                <div id="imgModule">
+                    
+                </div>
+            </div>
     </div>
 
     <script>
         const title = document.getElementById('title');
         const content = document.getElementById('content');
         const imgsrc = document.getElementById('imgsrc');
+        const img = document.getElementById('img');
         const createBtn  = document.getElementById('cerateBtn');
+        const selectImg = document.getElementById('selectImg');
+        const imgModule = document.getElementById('imgModule');
+        const selectImgBtn = document.getElementById('selectImgBtn');
+        let html = "<a href='http://localhost/colorfulCms/cms/php' id='uploadLink'>上傳新圖片</a><button id='chkImgBtn'>選擇圖片</button><p id='closeModule'>X</p>";
+        selectImgBtn.addEventListener('click',()=>{
+            selectImg.style.display = "flex";
+        })
         const createFn = ()=>{
             let newsData = {};
             console.log(content.value);
@@ -58,6 +138,49 @@
                 }
             }).catch(err=>{
                 console.log(err);
+            })
+        }
+        axios.get('/newsImgRouter').then(res=>{
+            console.log(res.data.result);
+            let imgData = res.data.result;
+            imgData.forEach(el=>{
+                html += `<img src='/images/uploads/${el.file_name}' class='imgList'>`;
+            })
+            imgModule.innerHTML = html;
+        })
+        window.onload = ()=>{
+            const imgList = document.getElementsByClassName('imgList');
+            const chkImgBtn = document.getElementById('chkImgBtn');
+            let imgurl = '';
+            const cleraBoder = ()=>{
+                for(let i=0;i<imgList.length;i++){
+                    imgList[i].style.border = "none";
+                }
+            }
+            const getImgUrl = (e)=>{
+                // console.log(e.target.src.split('uploads/')[1]);
+                cleraBoder();
+                e.target.style.border = "3px #f00 solid";
+                imgurl = e.target.src.split('uploads/')[1];
+            }
+            for(let i=0;i<imgList.length;i++){
+                imgList[i].addEventListener('click',getImgUrl)
+            }
+            chkImgBtn.addEventListener('click',()=>{
+                if(imgurl !== ''){
+                    imgsrc.value = '/images/uploads/'+imgurl;
+                    img.src = '/images/uploads/'+imgurl;
+                    alert('選擇成功!');
+                    selectImg.style.display = "none";
+               }else{
+                   alert('請選擇圖片!');
+               }
+                
+            })
+            closeModule.addEventListener('click',()=>{
+                selectImg.style.display = "none";
+                cleraBoder();
+                imgurl = '';
             })
         }
         createBtn.addEventListener('click',createFn);

@@ -28,7 +28,7 @@ router.post('/',(req, res, next)=>{
 
 router.patch('/:id',(req, res ,next)=>{
     let newsId = req.params.id;
-    conn.query('UPDATE news SET title=?,content=? WHERE id=?',[req.body.title, req.body.content, newsId],(err, result)=>{
+    conn.query('UPDATE news SET title=?,content=?,imgsrc=? WHERE id=?',[req.body.title, req.body.content, req.body.imgsrc, newsId],(err, result)=>{
         if(err){
             throw err;
         }else{
@@ -51,6 +51,8 @@ router.delete('/:id',(req, res, next)=>{
         }
     })
 })
+
+
 
 
 module.exports = router;

@@ -29,26 +29,112 @@
         min-height: 300px;
         resize: vertical
     }
+    #updatePage .imgbox{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    #updatePage .imgbox button{
+        width:150px;
+        height: 35px;
+    }
+    #updatePage img{
+        width:200px;
+        height: 150px;
+    }
+    #selectImg{
+    width:100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left:0;
+    background-color: rgba(0, 0, 0, .5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+#imgModule{
+    width:800px;
+    height: 600px;
+    background-color: #fff;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+}
+#imgModule img{
+    width:200px;
+    height: 150px;
+    object-fit: cover;
+    margin:10px;
+    cursor: pointer;
+}
+#chkImgBtn{
+    position: absolute;
+    right:15px;
+    bottom: 15px;
+    width:100px;
+    height: 35px;
+    background-color: #ccc;
+    color:#222;
+    font-size: 14px;
+    cursor: pointer;
+    border:1px #111 solid;
+}
+#closeModule{
+    position: absolute;
+    top: 5px;
+    right:5px;
+}
+#uploadLink{
+    position: absolute;
+    left:15px;
+    bottom: 15px;
+    width:100px;
+    height: 35px;
+    display: block;
+    background-color: #ccc;
+    text-decoration: none;
+    color:#222;
+    font-size: 14px;
+    text-align: center;
+    line-height: 35px;
+    cursor: pointer;
+    border:1px #111 solid;
+}
+
     </style>
 </head>
 <body>
     <div id="updatePage">
+            <div class="imgbox">
+                <img src="" alt="" id="img">
+                <button id="selectImgBtn">選擇圖片</button>
+            </div>
             <input type="text" id="title" />
+            <input type="hidden" id="imgsrc" />
             <textarea name="" id="content" cols="30" rows="10"></textarea>
             <button id="updateBtn">編輯</button>
+    </div>
+    <div id="selectImg">
+        <div id="imgModule">
+        </div>
     </div>
     <div id="error">
         <h1 style="color:red">錯誤!</h1>
     </div>
     <script>
-        window.onload = ()=>{
+        // window.onload = ()=>{
             const updatePage = document.getElementById('updatePage');
             const url = location.href;
             const title = document.getElementById('title');
+            const img = document.getElementById('img');
             const content = document.getElementById('content');
             const updateBtn = document.getElementById('updateBtn');
             let errpage = false;
-            console.log(url.indexOf('?'));
+            const imgsrc = document.getElementById('imgsrc');
+            
             if(url.indexOf('?')!=-1){
                 const id = Number(url.split('?')[1].split('=')[1]);
                 axios.get('/newsrouter').then(res=>{
@@ -67,9 +153,10 @@
                                 error.style.display = "block";
                                 return;
                         }
-                        console.log(newsData);
+                        // console.log(newsData);
                         title.value = newsData.title;
                         content.value = newsData.content;
+                        img.src = newsData.imgsrc;
                 })
                 
 
@@ -77,6 +164,7 @@
                     let newsData = {};
                     newsData.title = title.value;
                     newsData.content = content.value;
+                    newsData.imgsrc = imgsrc.value;
                     axios.patch(`/newsrouter/${id}`,newsData).then(res=>{
                         if(res.status===200){
                             console.log(res.data);
@@ -95,11 +183,59 @@
                 const error = document.getElementById('error');
                 error.style.display = "block";
             }
-            
+        // };
 
-            
-        };
-        
+        const createBtn  = document.getElementById('cerateBtn');
+        const selectImg = document.getElementById('selectImg');
+        const imgModule = document.getElementById('imgModule');
+        const selectImgBtn = document.getElementById('selectImgBtn');
+        let html = "<a href='http://localhost/colorfulCms/cms/php' id='uploadLink'>上傳新圖片</a><button id='chkImgBtn'>選擇圖片</button><p id='closeModule'>X</p>";
+        selectImgBtn.addEventListener('click',()=>{
+            selectImg.style.display = "flex";
+        })
+        axios.get('/newsImgRouter').then(res=>{
+            console.log(res.data.result);
+            let imgData = res.data.result;
+            imgData.forEach(el=>{
+                html += `<img src='/images/uploads/${el.file_name}' class='imgList'>`;
+            })
+            imgModule.innerHTML = html;
+        })
+        window.onload = ()=>{
+            const imgList = document.getElementsByClassName('imgList');
+            const chkImgBtn = document.getElementById('chkImgBtn');
+            let imgurl = '';
+            const cleraBoder = ()=>{
+                for(let i=0;i<imgList.length;i++){
+                    imgList[i].style.border = "none";
+                }
+            }
+            const getImgUrl = (e)=>{
+                // console.log(e.target.src.split('uploads/')[1]);
+                cleraBoder();
+                e.target.style.border = "3px #f00 solid";
+                imgurl = e.target.src.split('uploads/')[1];
+            }
+            for(let i=0;i<imgList.length;i++){
+                imgList[i].addEventListener('click',getImgUrl)
+            }
+            chkImgBtn.addEventListener('click',()=>{
+               if(imgurl !== ''){
+                    imgsrc.value = '/images/uploads/'+imgurl;
+                    img.src = '/images/uploads/'+imgurl;
+                    alert('更換成功!');
+                    selectImg.style.display = "none";
+               }else{
+                   alert('請選擇圖片!');
+               }
+                
+            })
+            closeModule.addEventListener('click',()=>{
+                selectImg.style.display = "none";
+                cleraBoder();
+                imgurl = '';
+            })
+        }
     </script>
 </body>
 </html>
