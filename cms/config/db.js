@@ -7,7 +7,7 @@ const conn = mysql.createConnection({
 })
 
 conn.connect((err)=>{
-    if(err) throw err;
+    if(err) return err;
     console.log("資料庫連線成功!");
 })
 
